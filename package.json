@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "node src/scripts/generate-data.js && next dev",
+    "build": "node src/scripts/generate-data.js && next build",
+    "start": "next start",
+    "lint": "prettier --check ./src",
+    "lint:fix": "prettier --write ./src"
+  },
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "not IE_Mob 11"
+  ],
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "dependencies": {
+    "@material-ui/core": "^4.10.1",
+    "@material-ui/icons": "^4.9.1",
+    "next": "^9.4.4",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.36",
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5"
+  }
+}
