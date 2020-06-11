@@ -6,16 +6,8 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
+import rows from "data/data.json";
 import React, { useState } from "react";
-
-function createData(name, calories, fat, carbs, protein) {
-  return { name, calories, fat, carbs, protein };
-}
-
-const rows = [
-  createData("Cupcake", 305, 3.7, 67, 4.3),
-  createData("Donut", 452, 25.0, 51, 4.9),
-];
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -45,43 +37,23 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
-    id: "name",
-    numeric: false,
-    label: "Dessert (100g serving)",
+    id: "key",
+    label: "eslint rule name",
   },
-  { id: "calories", numeric: true, label: "Calories" },
-  { id: "fat", numeric: true, label: "Fat (g)" },
-  { id: "carbs", numeric: true, label: "Carbs (g)" },
-  { id: "protein", numeric: true, label: "Protein (g)" },
+  { id: "airbnb-base", label: "airbnb-base" },
+  { id: "eslint:recommended", label: "eslint:recommended" },
+  { id: "google", label: "google" },
+  { id: "standard", label: "standard" },
+  { id: "xo", label: "xo" },
+  { id: "xo/esnext", label: "xo/esnext" },
+  { id: "wikimedia", label: "wikimedia" },
+  { id: "wikimedia/server", label: "wikimedia/server" },
+  { id: "plugin:@shopify/esnext", label: "@shopify/esnext" },
 ];
-
-function EnhancedTableHead({ order, orderBy, onRequestSort }) {
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
-
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell key={headCell.id}>
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
 
 export default () => {
   const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("calories");
+  const [orderBy, setOrderBy] = useState("key");
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === "asc";
@@ -89,39 +61,38 @@ export default () => {
     setOrderBy(property);
   };
 
+  const createSortHandler = (property) => (event) => {
+    handleRequestSort(event, property);
+  };
+
   return (
     <Paper>
       <TableContainer>
         <Table>
-          <EnhancedTableHead
-            order={order}
-            orderBy={orderBy}
-            onRequestSort={handleRequestSort}
-            rowCount={rows.length}
-          />
+          <TableHead>
+            <TableRow>
+              {headCells.map((headCell) => (
+                <TableCell key={headCell.id}>
+                  <TableSortLabel
+                    active={orderBy === headCell.id}
+                    direction={orderBy === headCell.id ? order : "asc"}
+                    onClick={createSortHandler(headCell.id)}
+                  >
+                    {headCell.label}
+                  </TableSortLabel>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
           <TableBody>
             {stableSort(rows, getComparator(order, orderBy)).map(
-              (row, index) => {
-                const labelId = `enhanced-table-checkbox-${index}`;
-
-                return (
-                  <TableRow
-                    hover
-                    onClick={(event) => handleClick(event, row.name)}
-                    role="checkbox"
-                    tabIndex={-1}
-                    key={row.name}
-                  >
-                    <TableCell component="th" id={labelId} scope="row">
-                      {row.name}
-                    </TableCell>
-                    <TableCell align="right">{row.calories}</TableCell>
-                    <TableCell align="right">{row.fat}</TableCell>
-                    <TableCell align="right">{row.carbs}</TableCell>
-                    <TableCell align="right">{row.protein}</TableCell>
-                  </TableRow>
-                );
-              }
+              (row, index) => (
+                <TableRow hover key={row.key}>
+                  {headCells.map((headCell) => (
+                    <TableCell key={headCell.id}>{row[headCell.id]}</TableCell>
+                  ))}
+                </TableRow>
+              )
             )}
           </TableBody>
         </Table>

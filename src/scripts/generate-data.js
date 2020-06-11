@@ -40,7 +40,17 @@ const configs = [
     });
   }
 
-  await fs.writeFile("data/data.json", JSON.stringify(mergedRules));
+  const output = [
+    ...Object.entries(mergedRules).map(([key, values]) => ({
+      key,
+      ...configs.reduce(
+        (result, config) => ({ ...result, [config]: values[config] || 0 }),
+        {}
+      ),
+    })),
+  ];
+
+  await fs.writeFile("data/data.json", JSON.stringify(output));
 })();
 
 function getValue(value) {

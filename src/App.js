@@ -2,7 +2,7 @@ import Box from "@material-ui/core/Box";
 import Container from "@material-ui/core/Container";
 import Typography from "@material-ui/core/Typography";
 import React from "react";
-import RuleTable from "RuleTable";
+import RuleTable from "src/RuleTable";
 
 export default () => (
   <Container maxWidth="lg">
