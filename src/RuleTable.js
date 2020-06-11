@@ -6,6 +6,8 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
+import CancelOutlinedIcon from "@material-ui/icons/CancelOutlined";
+import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import rows from "data/data.json";
 import React, { useState } from "react";
 
@@ -43,20 +45,34 @@ function stableSort(array, comparator) {
   return stabilizedThis.map((el) => el[0]);
 }
 
+function getIcon(value) {
+  switch (value) {
+    case 0:
+      return "-";
+    case 1:
+      return <ErrorOutlineIcon />;
+    case 2:
+      return <CancelOutlinedIcon />;
+
+    default:
+      return value;
+  }
+}
+
 const headCells = [
   {
     id: "key",
     label: "eslint rule name",
   },
+  { id: "eslint:recommended", label: "eslint :recommended" },
   { id: "airbnb-base", label: "airbnb-base" },
-  { id: "eslint:recommended", label: "eslint:recommended" },
   { id: "google", label: "google" },
   { id: "standard", label: "standard" },
   { id: "xo", label: "xo" },
-  { id: "xo/esnext", label: "xo/esnext" },
+  { id: "xo/esnext", label: "xo /esnext" },
   { id: "wikimedia", label: "wikimedia" },
-  { id: "wikimedia/server", label: "wikimedia/server" },
-  { id: "plugin:@shopify/esnext", label: "@shopify/esnext" },
+  { id: "wikimedia/server", label: "wikimedia /server" },
+  { id: "plugin:@shopify/esnext", label: "@shopify /esnext" },
 ];
 
 export default () => {
@@ -97,7 +113,9 @@ export default () => {
               (row, index) => (
                 <TableRow hover key={row.key}>
                   {headCells.map((headCell) => (
-                    <TableCell key={headCell.id}>{row[headCell.id]}</TableCell>
+                    <TableCell key={headCell.id}>
+                      {getIcon(row[headCell.id])}
+                    </TableCell>
                   ))}
                 </TableRow>
               )
