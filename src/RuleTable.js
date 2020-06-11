@@ -10,6 +10,14 @@ import rows from "data/data.json";
 import React, { useState } from "react";
 
 function descendingComparator(a, b, orderBy) {
+  if (orderBy === "key") {
+    if (b.key.includes("/") && !a.key.includes("/")) {
+      return 1;
+    }
+    if (!b.key.includes("/") && a.key.includes("/")) {
+      return -1;
+    }
+  }
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
