@@ -1,3 +1,4 @@
+import Link from "@material-ui/core/Link";
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -109,17 +110,25 @@ export default () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {stableSort(rows, getComparator(order, orderBy)).map(
-              (row, index) => (
-                <TableRow hover key={row.key}>
-                  {headCells.map((headCell) => (
-                    <TableCell key={headCell.id}>
-                      {getIcon(row[headCell.id])}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              )
-            )}
+            {stableSort(rows, getComparator(order, orderBy)).map((row) => (
+              <TableRow hover key={row.key}>
+                {headCells.map((headCell, index) => (
+                  <TableCell key={headCell.id}>
+                    {index === 0 && !row.key.includes("/") ? (
+                      <Link
+                        href={`https://eslint.org/docs/rules/${row.key}`}
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        {getIcon(row[headCell.id])}
+                      </Link>
+                    ) : (
+                      getIcon(row[headCell.id])
+                    )}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
