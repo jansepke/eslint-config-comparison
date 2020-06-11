@@ -4,7 +4,7 @@ import Typography from "@material-ui/core/Typography";
 import React from "react";
 import RuleTable from "src/RuleTable";
 
-export default () => (
+export default ({ rules }) => (
   <Container maxWidth="lg">
     <Typography variant="h2" align="center">
       eslint config comparison
@@ -20,6 +20,6 @@ export default () => (
         tincidunt accumsan justo sodales, euismod vulputate sapien.
       </Typography>
     </Box>
-    <RuleTable />
+    <RuleTable rules={rules} />
   </Container>
 );

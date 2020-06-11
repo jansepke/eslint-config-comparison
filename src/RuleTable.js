@@ -9,7 +9,6 @@ import TableRow from "@material-ui/core/TableRow";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import CancelOutlinedIcon from "@material-ui/icons/CancelOutlined";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
-import rows from "data/data.json";
 import React, { useState } from "react";
 
 function descendingComparator(a, b, orderBy) {
@@ -76,7 +75,7 @@ const headCells = [
   { id: "plugin:@shopify/esnext", label: "@shopify /esnext" },
 ];
 
-export default () => {
+export default ({ rules }) => {
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("key");
 
@@ -110,7 +109,7 @@ export default () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {stableSort(rows, getComparator(order, orderBy)).map((row) => (
+            {stableSort(rules, getComparator(order, orderBy)).map((row) => (
               <TableRow hover key={row.key}>
                 {headCells.map((headCell, index) => (
                   <TableCell key={headCell.id}>
