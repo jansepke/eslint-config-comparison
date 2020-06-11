@@ -1,52 +1,19 @@
 import Link from "@material-ui/core/Link";
-import Paper from "@material-ui/core/Paper";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import TableSortLabel from "@material-ui/core/TableSortLabel";
 import CancelOutlinedIcon from "@material-ui/icons/CancelOutlined";
+import ChevronRight from "@material-ui/icons/ChevronRight";
+import Clear from "@material-ui/icons/Clear";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
-import React, { useState } from "react";
+import Search from "@material-ui/icons/Search";
+import MaterialTable from "material-table";
+import React, { forwardRef } from "react";
 
-function descendingComparator(a, b, orderBy) {
-  if (orderBy === "key") {
-    if (b.key.includes("/") && !a.key.includes("/")) {
-      return 1;
-    }
-    if (!b.key.includes("/") && a.key.includes("/")) {
-      return -1;
-    }
+const renderIcon = (column) => (rowData) => {
+  if (rowData.categoryId !== undefined) {
+    return "";
   }
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
 
-function getComparator(order, orderBy) {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-function getIcon(value) {
-  switch (value) {
+  switch (rowData[column]) {
+    case undefined:
     case 0:
       return "-";
     case 1:
@@ -55,82 +22,82 @@ function getIcon(value) {
       return <CancelOutlinedIcon />;
 
     default:
-      return value;
+      return rowData[column];
   }
-}
+};
 
-const headCells = [
+const renderLink = (rowData) =>
+  rowData.categoryId === undefined && !rowData.name.includes("/") ? (
+    <Link
+      href={`https://eslint.org/docs/rules/${rowData.name}`}
+      target="_blank"
+      rel="noopener"
+    >
+      {rowData.name}
+    </Link>
+  ) : (
+    rowData.name
+  );
+
+const columns = [
   {
-    id: "key",
-    label: "eslint rule name",
+    field: "name",
+    title: "Category / Name",
+    render: renderLink,
   },
-  { id: "eslint:recommended", label: "eslint :recommended" },
-  { id: "airbnb-base", label: "airbnb-base" },
-  { id: "google", label: "google" },
-  { id: "standard", label: "standard" },
-  { id: "xo", label: "xo" },
-  { id: "xo/esnext", label: "xo /esnext" },
-  { id: "wikimedia", label: "wikimedia" },
-  { id: "wikimedia/server", label: "wikimedia /server" },
-  { id: "plugin:@shopify/esnext", label: "@shopify /esnext" },
+  {
+    field: "eslint:recommended",
+    title: "eslint :recommended",
+    render: renderIcon("eslint:recommended"),
+  },
+  {
+    field: "airbnb-base",
+    title: "airbnb-base",
+    render: renderIcon("airbnb-base"),
+  },
+  { field: "google", title: "google", render: renderIcon("google") },
+  { field: "standard", title: "standard", render: renderIcon("standard") },
+  { field: "xo", title: "xo", render: renderIcon("xo") },
+  { field: "xo/esnext", title: "xo /esnext", render: renderIcon("xo/esnext") },
+  { field: "wikimedia", title: "wikimedia", render: renderIcon("wikimedia") },
+  {
+    field: "wikimedia/server",
+    title: "wikimedia /server",
+    render: renderIcon("wikimedia/server"),
+  },
+  {
+    field: "plugin:@shopify/esnext",
+    title: "@shopify /esnext",
+    render: renderIcon("plugin:@shopify/esnext"),
+  },
 ];
 
+const tableIcons = {
+  DetailPanel: forwardRef((props, ref) => (
+    <ChevronRight {...props} ref={ref} />
+  )),
+  ResetSearch: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
+  Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
+};
+
 export default ({ rules }) => {
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("key");
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === "asc";
-    setOrder(isAsc ? "desc" : "asc");
-    setOrderBy(property);
-  };
-
-  const createSortHandler = (property) => (event) => {
-    handleRequestSort(event, property);
-  };
+  const categories = rules.filter((rule) => rule.categoryId !== undefined);
 
   return (
-    <Paper>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              {headCells.map((headCell) => (
-                <TableCell key={headCell.id}>
-                  <TableSortLabel
-                    active={orderBy === headCell.id}
-                    direction={orderBy === headCell.id ? order : "asc"}
-                    onClick={createSortHandler(headCell.id)}
-                  >
-                    {headCell.label}
-                  </TableSortLabel>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {stableSort(rules, getComparator(order, orderBy)).map((row) => (
-              <TableRow hover key={row.key}>
-                {headCells.map((headCell, index) => (
-                  <TableCell key={headCell.id}>
-                    {index === 0 && !row.key.includes("/") ? (
-                      <Link
-                        href={`https://eslint.org/docs/rules/${row.key}`}
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        {getIcon(row[headCell.id])}
-                      </Link>
-                    ) : (
-                      getIcon(row[headCell.id])
-                    )}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </Paper>
+    <MaterialTable
+      options={{
+        showTitle: false,
+        draggable: false,
+        paging: false,
+        sorting: false,
+        debounceInterval: 500,
+      }}
+      icons={tableIcons}
+      data={rules}
+      columns={columns}
+      parentChildData={(row, rows) =>
+        row.parentId !== undefined ? categories[row.parentId] : undefined
+      }
+    />
   );
 };

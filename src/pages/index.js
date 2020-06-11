@@ -1,4 +1,5 @@
 import { ESLint } from "eslint";
+import yaml from "js-yaml";
 import Head from "next/head";
 import React from "react";
 import App from "src/App";
@@ -13,8 +14,8 @@ export default ({ rules }) => (
 );
 
 const configs = [
-  "airbnb-base",
   "eslint:recommended",
+  "airbnb-base",
   "google",
   "standard",
   "xo",
@@ -25,32 +26,80 @@ const configs = [
 ];
 
 export async function getStaticProps() {
-  const mergedRules = {};
+  const eslintRulesYaml = await (
+    await fetch(
+      "https://raw.githubusercontent.com/eslint/website/master/_data/rules.yml"
+    )
+  ).text();
+
+  const eslintRules = await yaml.safeLoad(eslintRulesYaml);
+
+  let highestCategory = 0;
+
+  const flattenedRules = [
+    ...eslintRules.categories,
+    eslintRules.deprecated,
+  ].reduce((acc, { description, name, rules }, categoryId) => {
+    highestCategory = categoryId;
+    return [
+      ...acc,
+      { description, name, categoryId: highestCategory },
+      ...rules.map((rule) => ({
+        ...rule,
+        parentId: highestCategory,
+      })),
+    ];
+  }, []);
 
   for (const config of configs) {
     const rules = await getRules([config]);
 
     Object.entries(rules).forEach(([key, value]) => {
-      mergedRules[key] = {
-        ...(mergedRules[key] || {}),
-        [config]: getValue(value),
-      };
+      const existingRule = flattenedRules.find((rule) => rule.name === key);
+
+      if (existingRule) {
+        existingRule[config] = getValue(value);
+      } else {
+        if (key.includes("/")) {
+          const category = key.split("/")[0];
+          const existingCategory = flattenedRules.find(
+            (rule) => rule.name === category
+          );
+
+          if (!existingCategory) {
+            highestCategory = highestCategory + 1;
+
+            flattenedRules.push(
+              {
+                name: category,
+                categoryId: highestCategory,
+              },
+              {
+                name: key,
+                [config]: getValue(value),
+                parentId: highestCategory,
+              }
+            );
+          } else {
+            flattenedRules.push({
+              name: key,
+              [config]: getValue(value),
+              parentId: existingCategory.categoryId,
+            });
+          }
+        } else {
+          flattenedRules.push({
+            name: key,
+            [config]: getValue(value),
+          });
+        }
+      }
     });
   }
 
-  const output = [
-    ...Object.entries(mergedRules).map(([key, values]) => ({
-      key,
-      ...configs.reduce(
-        (result, config) => ({ ...result, [config]: values[config] || 0 }),
-        {}
-      ),
-    })),
-  ];
-
   return {
     props: {
-      rules: output,
+      rules: flattenedRules,
     },
   };
 }
