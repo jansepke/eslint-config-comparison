@@ -5,7 +5,7 @@ import React from "react";
 import RuleTable from "src/RuleTable";
 
 export default ({ rules }) => (
-  <Container maxWidth="lg">
+  <Container maxWidth="xl">
     <Typography variant="h2" align="center">
       eslint config comparison
     </Typography>

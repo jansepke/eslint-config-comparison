@@ -39,12 +39,16 @@ const renderLink = (rowData) =>
     rowData.name
   );
 
+const renderDescription = (rowData) =>
+  rowData.description?.replace(/\<[^)]*?\> */g, "").replace(/:$/g, "");
+
 const columns = [
   {
     field: "name",
     title: "Category / Name",
     render: renderLink,
   },
+  { field: "description", title: "Description", render: renderDescription },
   {
     field: "eslint:recommended",
     title: "eslint :recommended",
