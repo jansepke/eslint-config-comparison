@@ -56,42 +56,50 @@ export async function getStaticProps() {
 
     Object.entries(rules).forEach(([key, value]) => {
       const existingRule = flattenedRules.find((rule) => rule.name === key);
-
-      if (existingRule) {
-        existingRule[config] = getValue(value);
-      } else {
-        if (key.includes("/")) {
-          const category = key.split("/")[0];
+      const ruleValue = getValue(value);
+      if (ruleValue !== 0) {
+        if (existingRule) {
+          existingRule[config] = ruleValue;
           const existingCategory = flattenedRules.find(
-            (rule) => rule.name === category
+            (rule) => rule.categoryId === existingRule.parentId
           );
-
-          if (!existingCategory) {
-            highestCategory = highestCategory + 1;
-
-            flattenedRules.push(
-              {
-                name: category,
-                categoryId: highestCategory,
-              },
-              {
-                name: key,
-                [config]: getValue(value),
-                parentId: highestCategory,
-              }
+          existingCategory[config] = (existingCategory[config] || 0) + 1;
+        } else {
+          if (key.includes("/")) {
+            const category = key.split("/")[0];
+            const existingCategory = flattenedRules.find(
+              (rule) => rule.name === category
             );
+
+            if (!existingCategory) {
+              highestCategory = highestCategory + 1;
+
+              flattenedRules.push(
+                {
+                  name: category,
+                  categoryId: highestCategory,
+                  [config]: 1,
+                },
+                {
+                  name: key,
+                  [config]: ruleValue,
+                  parentId: highestCategory,
+                }
+              );
+            } else {
+              existingCategory[config] = (existingCategory[config] || 0) + 1;
+              flattenedRules.push({
+                name: key,
+                [config]: ruleValue,
+                parentId: existingCategory.categoryId,
+              });
+            }
           } else {
             flattenedRules.push({
               name: key,
-              [config]: getValue(value),
-              parentId: existingCategory.categoryId,
+              [config]: ruleValue,
             });
           }
-        } else {
-          flattenedRules.push({
-            name: key,
-            [config]: getValue(value),
-          });
         }
       }
     });

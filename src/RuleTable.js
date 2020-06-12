@@ -9,7 +9,7 @@ import React, { forwardRef } from "react";
 
 const renderIcon = (column) => (rowData) => {
   if (rowData.categoryId !== undefined) {
-    return "";
+    return rowData[column];
   }
 
   switch (rowData[column]) {
