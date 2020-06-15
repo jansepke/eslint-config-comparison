@@ -34,80 +34,104 @@ export async function getStaticProps() {
 
   const eslintRules = await yaml.safeLoad(eslintRulesYaml);
 
-  let highestCategory = 0;
+  const categoryData = [...eslintRules.categories, eslintRules.deprecated].map(
+    ({ description, name }, categoryId) => ({
+      description,
+      name,
+      categoryId,
+    })
+  );
 
-  const flattenedRules = [
+  const ruleData = [
     ...eslintRules.categories,
     eslintRules.deprecated,
-  ].reduce((acc, { description, name, rules }, categoryId) => {
-    highestCategory = categoryId;
-    return [
-      ...acc,
-      { description, name, categoryId: highestCategory },
-      ...rules.map((rule) => ({
-        ...rule,
-        parentId: highestCategory,
-      })),
-    ];
-  }, []);
+  ].flatMap(({ rules }, categoryId) =>
+    rules.map((rule) => ({ ...rule, parentId: categoryId }))
+  );
+
+  let highestCategory = categoryData.length - 1;
+
+  const rules = [];
 
   for (const config of configs) {
-    const rules = await getRules([config]);
+    const configRules = await getRules([config]);
 
-    Object.entries(rules).forEach(([key, value]) => {
-      const existingRule = flattenedRules.find((rule) => rule.name === key);
+    Object.entries(configRules).forEach(([key, value]) => {
+      const existingRuleData = ruleData.find((rule) => rule.name === key);
+      const existingRule = rules.find((rule) => rule.name === key);
       const ruleValue = getValue(value);
+
       if (ruleValue !== 0) {
         if (existingRule) {
+          // existing rule will be updated
           existingRule[config] = ruleValue;
-          const existingCategory = flattenedRules.find(
+          const existingCategory = rules.find(
             (rule) => rule.categoryId === existingRule.parentId
           );
           existingCategory[config] = (existingCategory[config] || 0) + 1;
         } else {
-          if (key.includes("/")) {
-            const category = key.split("/")[0];
-            const existingCategory = flattenedRules.find(
-              (rule) => rule.name === category
-            );
+          const category = key.split("/")[0];
+          const existingCategory = rules.find(
+            (rule) =>
+              rule.name === category ||
+              (existingRuleData && existingRuleData.parentId == rule.categoryId)
+          );
 
-            if (!existingCategory) {
-              highestCategory = highestCategory + 1;
-
-              flattenedRules.push(
-                {
-                  name: category,
-                  categoryId: highestCategory,
-                  [config]: 1,
-                },
-                {
-                  name: key,
-                  [config]: ruleValue,
-                  parentId: highestCategory,
-                }
-              );
-            } else {
-              existingCategory[config] = (existingCategory[config] || 0) + 1;
-              flattenedRules.push({
-                name: key,
-                [config]: ruleValue,
-                parentId: existingCategory.categoryId,
-              });
-            }
-          } else {
-            flattenedRules.push({
+          if (existingCategory) {
+            // new rule will be added to existing category
+            existingCategory[config] = (existingCategory[config] || 0) + 1;
+            rules.push({
               name: key,
               [config]: ruleValue,
+              description: existingRuleData?.description ?? null,
+              parentId: existingCategory.categoryId,
             });
+          } else if (existingRuleData) {
+            // new standard rule and category will be added
+            const existingCategoryData = categoryData.find(
+              (rule) => rule.categoryId === existingRuleData.parentId
+            );
+            rules.push(
+              {
+                ...existingCategoryData,
+                [config]: 1,
+              },
+              {
+                name: key,
+                [config]: ruleValue,
+                description: existingRuleData.description ?? null,
+                parentId: existingCategoryData.categoryId,
+              }
+            );
+          } else {
+            // new plugin rule and category will be added
+            highestCategory = highestCategory + 1;
+
+            rules.push(
+              {
+                name: category,
+                categoryId: highestCategory,
+                [config]: 1,
+              },
+              {
+                name: key,
+                [config]: ruleValue,
+                parentId: highestCategory,
+              }
+            );
           }
         }
       }
     });
   }
 
+  const sortedRules = rules.sort(
+    (a, b) => (a.categoryId || a.parentId) - (b.categoryId || b.parentId)
+  );
+
   return {
     props: {
-      rules: flattenedRules,
+      rules: sortedRules,
     },
   };
 }

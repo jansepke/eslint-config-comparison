@@ -49,6 +49,8 @@ const columns = [
     render: renderLink,
   },
   { field: "description", title: "Description", render: renderDescription },
+  // { field: "categoryId", title: "categoryId" },
+  // { field: "parentId", title: "parentId" },
   {
     field: "eslint:recommended",
     title: "eslint :recommended",
@@ -100,7 +102,9 @@ export default ({ rules }) => {
       data={rules}
       columns={columns}
       parentChildData={(row, rows) =>
-        row.parentId !== undefined ? categories[row.parentId] : undefined
+        row.parentId !== undefined
+          ? categories.find((c) => c.categoryId === row.parentId)
+          : undefined
       }
     />
   );
