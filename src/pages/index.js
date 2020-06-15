@@ -3,6 +3,7 @@ import yaml from "js-yaml";
 import Head from "next/head";
 import React from "react";
 import App from "src/App";
+import { CONFIGS } from "src/Config";
 
 export default ({ rules }) => (
   <>
@@ -12,18 +13,6 @@ export default ({ rules }) => (
     <App rules={rules} />
   </>
 );
-
-const configs = [
-  "eslint:recommended",
-  "airbnb-base",
-  "google",
-  "standard",
-  "xo",
-  "xo/esnext",
-  "wikimedia",
-  "wikimedia/server",
-  "plugin:@shopify/esnext",
-];
 
 export async function getStaticProps() {
   const eslintRulesYaml = await (
@@ -53,7 +42,7 @@ export async function getStaticProps() {
 
   const rules = [];
 
-  for (const config of configs) {
+  for (const config of CONFIGS) {
     const configRules = await getRules([config]);
 
     Object.entries(configRules).forEach(([key, value]) => {

@@ -42,7 +42,7 @@ const renderLink = (rowData) =>
 const renderDescription = (rowData) =>
   rowData.description?.replace(/\<[^)]*?\> */g, "").replace(/:$/g, "");
 
-const columns = [
+const baseColumns = [
   {
     field: "name",
     title: "Category / Name",
@@ -51,6 +51,9 @@ const columns = [
   { field: "description", title: "Description", render: renderDescription },
   // { field: "categoryId", title: "categoryId" },
   // { field: "parentId", title: "parentId" },
+];
+
+const columns = [
   {
     field: "eslint:recommended",
     title: "eslint :recommended",
@@ -86,8 +89,12 @@ const tableIcons = {
   Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
 };
 
-export default ({ rules }) => {
+export default ({ rules, configs }) => {
   const categories = rules.filter((rule) => rule.categoryId !== undefined);
+  const visibleColumns = [
+    ...baseColumns,
+    ...columns.filter((c) => configs.includes(c.field)),
+  ];
 
   return (
     <MaterialTable
@@ -100,7 +107,7 @@ export default ({ rules }) => {
       }}
       icons={tableIcons}
       data={rules}
-      columns={columns}
+      columns={visibleColumns}
       parentChildData={(row, rows) =>
         row.parentId !== undefined
           ? categories.find((c) => c.categoryId === row.parentId)
