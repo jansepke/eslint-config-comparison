@@ -91,10 +91,11 @@ const tableIcons = {
 
 export default ({ rules, configs }) => {
   const categories = rules.filter((rule) => rule.categoryId !== undefined);
-  const visibleColumns = [
-    ...baseColumns,
-    ...columns.filter((c) => configs.includes(c.field)),
-  ];
+
+  const visibleColumns = columns.filter((c) => configs.includes(c.field));
+  const visibleRules = rules.filter((r) =>
+    visibleColumns.some((c) => !(r[c.field] === undefined || r[c.field] === 0))
+  );
 
   return (
     <MaterialTable
@@ -106,8 +107,8 @@ export default ({ rules, configs }) => {
         debounceInterval: 500,
       }}
       icons={tableIcons}
-      data={rules}
-      columns={visibleColumns}
+      data={visibleRules}
+      columns={[...baseColumns, ...visibleColumns]}
       parentChildData={(row, rows) =>
         row.parentId !== undefined
           ? categories.find((c) => c.categoryId === row.parentId)
